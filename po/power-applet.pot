@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2001-12-14 14:01-0800\n"
+"POT-Creation-Date: 2001-12-16 15:29-0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,47 +15,47 @@ msgstr ""
 "Content-Transfer-Encoding: ENCODING\n"
 
 #. N/A for Not Available
-#: src/power-applet.c:181 src/power-applet.c:217
+#: src/power-applet.c:194 src/power-applet.c:230
 msgid "N/A"
 msgstr ""
 
-#: src/power-applet.c:496
+#: src/power-applet.c:509
 msgid "No themes installed"
 msgstr ""
 
-#: src/power-applet.c:648 src/power-applet.c:681
+#: src/power-applet.c:661 src/power-applet.c:694
 msgid "Cannot open /proc/apm"
 msgstr ""
 
-#: src/power-applet.c:787
+#: src/power-applet.c:800
 msgid "No power management was found"
 msgstr ""
 
-#: src/power-applet.c:942
+#: src/power-applet.c:958
 msgid "PowerApplet properties"
 msgstr ""
 
-#: src/power-applet.c:1101
+#: src/power-applet.c:1117
 msgid "Power Applet"
 msgstr ""
 
-#: src/power-applet.c:1103
+#: src/power-applet.c:1119
 msgid "(C) 2001 Free Software Foundation "
 msgstr ""
 
-#: src/power-applet.c:1105
+#: src/power-applet.c:1121
 msgid "blablabla"
 msgstr ""
 
-#: src/power-applet.c:1200
+#: src/power-applet.c:1216
 msgid "Properties..."
 msgstr ""
 
-#: src/power-applet.c:1206
+#: src/power-applet.c:1222
 msgid "About..."
 msgstr ""
 
-#: src/power-applet.c:1230 src/power-applet.c:1254
+#: src/power-applet.c:1246 src/power-applet.c:1270
 msgid "Can't create applet!\n"
 msgstr ""
 

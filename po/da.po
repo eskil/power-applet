@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wavelan-applet\n"
-"POT-Creation-Date: 2001-12-14 14:01-0800\n"
+"POT-Creation-Date: 2001-12-16 15:29-0800\n"
 "PO-Revision-Date: 2001-11-227 22:56-0900\n"
 "Last-Translator: Eskil Heyn Olsen <eskil@eskil.org>\n"
 "Language-Team: Danish <danish@klid.org>\n"
@@ -15,50 +15,50 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. N/A for Not Available
-#: src/power-applet.c:181 src/power-applet.c:217
+#: src/power-applet.c:194 src/power-applet.c:230
 msgid "N/A"
 msgstr ""
 
-#: src/power-applet.c:496
+#: src/power-applet.c:509
 msgid "No themes installed"
 msgstr ""
 
-#: src/power-applet.c:648 src/power-applet.c:681
+#: src/power-applet.c:661 src/power-applet.c:694
 #, fuzzy
 msgid "Cannot open /proc/apm"
 msgstr "Kan ikke læse /proc/net/wireless"
 
-#: src/power-applet.c:787
+#: src/power-applet.c:800
 msgid "No power management was found"
 msgstr ""
 
-#: src/power-applet.c:942
+#: src/power-applet.c:958
 #, fuzzy
 msgid "PowerApplet properties"
 msgstr "WaveLan applet indstillinger"
 
-#: src/power-applet.c:1101
+#: src/power-applet.c:1117
 #, fuzzy
 msgid "Power Applet"
 msgstr "WaveLan Applet"
 
-#: src/power-applet.c:1103
+#: src/power-applet.c:1119
 msgid "(C) 2001 Free Software Foundation "
 msgstr "(C) 2001 Free Software Foundation"
 
-#: src/power-applet.c:1105
+#: src/power-applet.c:1121
 msgid "blablabla"
 msgstr "blablabla"
 
-#: src/power-applet.c:1200
+#: src/power-applet.c:1216
 msgid "Properties..."
 msgstr "Indstillinger..."
 
-#: src/power-applet.c:1206
+#: src/power-applet.c:1222
 msgid "About..."
 msgstr "Om..."
 
-#: src/power-applet.c:1230 src/power-applet.c:1254
+#: src/power-applet.c:1246 src/power-applet.c:1270
 msgid "Can't create applet!\n"
 msgstr "Kan ikke oprette applet!\n"
 

@@ -48,6 +48,18 @@ typedef enum {
 	NONE
 } PowerManagement;
 
+#define CFG_SHOW_PERCENT "FALSE"
+#define CFG_SHOW_TIME "TRUE"
+#define CFG_SHOW_AC "FALSE"
+#define CFG_SHOW_FULL_DIALOG "FALSE"
+#define CFG_SHOW_LOW_DIALOG "TRUE"
+#define CFG_LOW_THRESHOLD "5"
+#define CFG_SHUTDOWN_THRESHOLD "2"
+#define CFG_UPDATE_INTERVAL "2"
+#define CFG_TEXT_AA "TRUE"
+#define CFG_FLASH_TEXT_RED "FALSE"
+#define CFG_THEME "default"
+
 typedef struct {
 	gchar *theme;
 	gboolean show_percent;
@@ -55,6 +67,7 @@ typedef struct {
 	gboolean show_ac;
 	gboolean show_full_dialog, show_low_dialog;
 	gint low_threshold;
+	gint shutdown_threshold;
 	gint update_interval;
 	gint suspend_threshold;
 	gboolean text_aa;
@@ -794,19 +807,22 @@ power_applet_load_properties (GtkWidget *applet)
 	Properties *properties;
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 
-	gnome_config_push_prefix (APPLET_WIDGET (applet)->privcfgpath);
-	properties->show_percent = gnome_config_get_bool ("show_percent=FALSE");
-	properties->show_time = gnome_config_get_bool ("show_time=TRUE");
-	properties->show_ac = gnome_config_get_bool ("show_ac=FALSE");
-	properties->show_full_dialog = gnome_config_get_bool ("show_full_dialog=TRUE");
-	properties->show_low_dialog = gnome_config_get_bool ("show_low_dialog=TRUE");
-	properties->low_threshold = gnome_config_get_int ("low_threshold=5");
-	properties->update_interval = gnome_config_get_int ("update_interval=2");
-	properties->text_aa = gnome_config_get_bool ("text_aa=TRUE");
-	properties->flash_red_when_low = gnome_config_get_bool ("flash_red_when_low=FALSE");
-	properties->theme = gnome_config_get_string ("theme=default");
+	g_message ("loading properties from %s", APPLET_WIDGET (applet)->privcfgpath);
 
-	properties->text_smaller = gnome_config_get_int ("text_smaller=5");
+	gnome_config_push_prefix (APPLET_WIDGET (applet)->privcfgpath);
+	properties->show_percent = gnome_config_get_bool ("power/show_percent=" CFG_SHOW_PERCENT);
+	properties->show_time = gnome_config_get_bool ("power/show_time=" CFG_SHOW_TIME);
+	properties->show_ac = gnome_config_get_bool ("power/show_ac=" CFG_SHOW_AC);
+	properties->show_full_dialog = gnome_config_get_bool ("power/show_full_dialog=" CFG_SHOW_FULL_DIALOG);
+	properties->show_low_dialog = gnome_config_get_bool ("power/show_low_dialog=" CFG_SHOW_LOW_DIALOG);
+	properties->low_threshold = gnome_config_get_int ("power/low_threshold=" CFG_LOW_THRESHOLD);
+	properties->low_threshold = gnome_config_get_int ("power/low_threshold=" CFG_SHUTDOWN_THRESHOLD);
+	properties->update_interval = gnome_config_get_int ("power/update_interval=" CFG_UPDATE_INTERVAL);
+	properties->text_aa = gnome_config_get_bool ("power/text_aa=" CFG_TEXT_AA);
+	properties->flash_red_when_low = gnome_config_get_bool ("power/flash_red_when_low=" CFG_FLASH_TEXT_RED);
+	properties->theme = gnome_config_get_string ("power/theme=" CFG_THEME);
+
+	properties->text_smaller = gnome_config_get_int ("power/text_smaller=5");
 	gnome_config_pop_prefix ();
 
 	properties->pm = NONE;
@@ -814,33 +830,33 @@ power_applet_load_properties (GtkWidget *applet)
 
 static void
 power_applet_save_properties (GtkWidget *applet, 
-				const char *cfgpath, 
-				const char *globalcfgpath) 
+			      const char *cfgpath, 
+			      const char *globalcfgpath) 
 {
 	Properties *properties;
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
+	g_assert (properties);
 
-	if (properties) {
-		gnome_config_push_prefix (cfgpath);
-		
-		gnome_config_set_bool ("show_percent", properties->show_percent);
-		gnome_config_set_bool ("show_time", properties->show_time);
-		gnome_config_set_bool ("show_ac", properties->show_ac);
-		gnome_config_set_bool ("show_full_dialog", properties->show_full_dialog);
-		gnome_config_set_bool ("show_low_dialog", properties->show_low_dialog);
-		gnome_config_set_int ("low_threshold", properties->low_threshold);
-		gnome_config_set_int ("update_interval", properties->update_interval);
-		gnome_config_set_bool ("text_aa", properties->text_aa);
-		gnome_config_set_bool ("flash_red_when_low", properties->flash_red_when_low);
-		gnome_config_set_string ("theme", properties->theme);
-		
-		gnome_config_set_int ("text_smaller", properties->text_smaller);
-		
-		gnome_config_pop_prefix ();
-		gnome_config_sync ();
-		gnome_config_drop_all ();
-	}
-  
+	g_message ("saving session to %s %s", cfgpath, globalcfgpath);
+
+	gnome_config_push_prefix (cfgpath);
+	
+	gnome_config_set_bool ("power/show_percent", properties->show_percent);
+	gnome_config_set_bool ("power/show_time", properties->show_time);
+	gnome_config_set_bool ("power/show_ac", properties->show_ac);
+	gnome_config_set_bool ("power/show_full_dialog", properties->show_full_dialog);
+	gnome_config_set_bool ("power/show_low_dialog", properties->show_low_dialog);
+	gnome_config_set_int ("power/low_threshold", properties->low_threshold);
+	gnome_config_set_int ("power/update_interval", properties->update_interval);
+	gnome_config_set_bool ("power/text_aa", properties->text_aa);
+	gnome_config_set_bool ("power/flash_red_when_low", properties->flash_red_when_low);
+	gnome_config_set_string ("power/theme", properties->theme);
+	
+	gnome_config_set_int ("power/text_smaller", properties->text_smaller);
+	
+	gnome_config_pop_prefix ();
+	gnome_config_sync ();
+	gnome_config_drop_all ();
 }
 
 static void
@@ -1111,9 +1127,9 @@ power_applet_about_cb (AppletWidget *widget, gpointer data)
 
 static gint
 power_applet_save_session (GtkWidget *applet,
-			     const char *cfgpath,
-			     const char *globcfgpath,
-			     gpointer data)
+			   const char *cfgpath,
+			   const char *globcfgpath,
+			   gpointer data)
 {
 	power_applet_save_properties (applet, cfgpath, globcfgpath);
 	return FALSE;
