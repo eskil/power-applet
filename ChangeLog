@@ -1,3 +1,41 @@
+2002-05-05  Eskil Heyn Olsen  <eskil@eskil.dk>
+
+	* src/power-applet.c: (power_applet_draw),
+	(power_applet_animate_timeout), (power_applet_low_power_state),
+	(power_applet_timeout_handler), (check_proc_file),
+	(power_applet_new), (applet_start_new_applet), (applet_activator):
+	Removed g_messages.
+	Check status before first draw.
+	Fixed various small bugs.
+	
+	* src/powerm.c: (checkUnit), (isIt),
+	(power_management_read_acpi_ac_adapter),
+	(power_management_read_acpi_battery), (power_management_read_acpi),
+	(power_management_read_apm), (power_management_present),
+	(power_management_read_info):
+	Added ACPI support.
+
+2002-02-21  Eskil Heyn Olsen  <eskil@eskil.dk>
+
+	* configure.in:
+	* src/power-applet.c: (power_applet_timeout_handler),
+	(applet_start_new_applet), (applet_activator):
+	Read power state before first draw (suggested by Jason Khong).
+
+2002-02-20  Eskil Heyn Olsen  <eskil@eskil.dk>
+
+	* README:
+	* configure.in:
+	* src/Makefile.am:
+	* src/power-applet.c: (power_applet_update_state):
+	* src/powerm.c: (power_management_read_apm):
+	* themes/default/Makefile.am:
+	* themes/gauge/Makefile.am:
+	* themes/lcd-translucent/Makefile.am:
+	* themes/lcd/Makefile.am:
+	* themes/leds/Makefile.am:
+	mjamjamja
+
 2002-01-25  Eskil Heyn Olsen  <eskil@eskil.dk>
 
 	* configure.in:

@@ -39,11 +39,6 @@
 
 #include <powerm.h>
 
-typedef enum {
-	BATTERY,
-	CHARGING
-} PowerState;
-
 #define CFG_SHOW_PERCENT "FALSE"
 #define CFG_SHOW_TIME "TRUE"
 #define CFG_SHOW_AC "FALSE"
@@ -86,6 +81,7 @@ typedef struct {
 	gboolean flashing;
 	gboolean message_already_showed;
 	gint old_minutes;
+	gint old_ac;
 	PowerInfo info;
 } Properties;
 
@@ -167,26 +163,37 @@ power_applet_draw (GtkWidget *applet)
 	pixmap = GTK_WIDGET (gtk_object_get_data (GTK_OBJECT (applet), "pixmap"));
 
 	if (!GTK_WIDGET_REALIZED (pixmap)) {
-		show_warning_dialog ("power applet widget not realised");
-		g_warning ("power_applet_draw ! realised");
 		return;
 	}
 
 	/* Update the tooltip */
-	g_message ("old min = %d, new min = %d", props->old_minutes, props->info.battery_time_left);
-	g_message ("message showed = %s", props->message_already_showed ? "TRUE" : "FALSE");
+	/* g_message ("old min = %d, new min = %d", props->old_minutes, props->info.battery_time_left); */
+	/* g_message ("message showed = %s", props->message_already_showed ? "TRUE" : "FALSE"); */
+
 	/* let's not update the tooltip unless nessecary,
 	   since, people won't have time to see it. */
-	if (props->old_minutes != props->info.battery_time_left) {
+	if (props->old_minutes != props->info.battery_time_left || props->old_ac != props->info.ac_online) {
 		char *tmp; 
-		int hr, min;
+		int hr, min, r_hr, r_min;
 
 		hr = props->info.battery_time_left/60;
 		min = props->info.battery_time_left%60;
+		r_hr = props->info.recharge_time_left/60;
+		r_min = props->info.recharge_time_left%60;
+
 
 		if (props->info.percent >= 0) {
-			if (props->info.ac_online == CHARGING) {
-				tmp = g_strdup_printf ("%3.2d%% %2.02d:%2.02d - AC", props->info.percent, hr, min);
+			if (props->info.ac_online == 1) {
+				if (props->info.percent < 100 && r_hr>=0 && r_min >= 0) {
+					tmp = g_strdup_printf ("%3.2d%% %2.02d:%2.02d - AC (%2.02d:%2.02d to full charge)", 
+							       props->info.percent, hr, min, r_hr, r_min);
+				} else if (props->info.percent == 100) {
+					tmp = g_strdup_printf ("%3.2d%% %2.02d:%2.02d - AC (full charge)", 
+							       props->info.percent, hr, min);
+				} else {
+					tmp = g_strdup_printf ("%3.2d%% %2.02d:%2.02d - AC", 
+							       props->info.percent, hr, min);
+				}
 			} else {
 				tmp = g_strdup_printf ("%3.2d%% %2.02d:%2.02d", props->info.percent, hr, min);
 			}
@@ -199,6 +206,7 @@ power_applet_draw (GtkWidget *applet)
 		g_free (tmp);
 	}
 	props->old_minutes = props->info.battery_time_left;
+	props->old_ac = props->info.ac_online;
 
 	/* update the text label */ 
 	if (power_applet_do_label (applet)) {
@@ -220,7 +228,7 @@ power_applet_draw (GtkWidget *applet)
 				g_string_sprintfa (str, "%.02d:%.02d", hr, min);			
 			}
 
-			if (props->show_ac && props->info.ac_online == CHARGING) {
+			if (props->show_ac && props->info.ac_online == 1) {
 				if (str->len) {
 					g_string_sprintfa (str, " - ");			
 				} 
@@ -239,22 +247,25 @@ power_applet_draw (GtkWidget *applet)
 	if (props->info.percent >= 0 && props->info.percent <= 100) {
 		int pixmap_offset = props->info.percent;
 
-		if (props->info.ac_online == CHARGING) {
+		if (props->info.ac_online == 1) {
 			pixmap_offset += 100;
 		}
 		
+		/* 
 		g_message ("%p != %p = %s", 
 			   props->pixmaps[pixmap_offset], props->current_pixmap, 
 			   props->pixmaps[pixmap_offset] != props->current_pixmap ? "TRUE" : "FALSE");
-
+		*/
 		if (props->pixmaps[pixmap_offset] != props->current_pixmap) {
 			props->current_pixmap = props->pixmaps[pixmap_offset];
 			if ( !props->flashing) {
 				eel_image_set_pixbuf_from_file_name (EEL_IMAGE (pixmap), props->current_pixmap);
 			}
+			/*
 			g_message ("loading image %d = %s",
 				   pixmap_offset,
 				   props->current_pixmap);
+			*/
 		}
 	} else {
 		g_warning ("Weird pct = %d", props->info.percent);
@@ -291,7 +302,10 @@ power_applet_animate_timeout (GtkWidget *applet)
 		num = 0;
 	}
 	image = g_list_nth (properties->low_images, num);
-	g_message ("animating %d of %d to %s", num, g_list_length (properties->low_images), (char*)image->data);
+	/*
+	g_message ("animating %d of %d to %s", 
+		   num, g_list_length (properties->low_images), (char*)image->data); 
+	*/
 	eel_image_set_pixbuf_from_file_name (EEL_IMAGE (pixmap), (char*)image->data);	
 	num++;
 
@@ -361,7 +375,7 @@ power_applet_low_power_state (GtkWidget *applet)
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 
 	/* if we're charging, cancel any special things */
-	if (properties->info.ac_online == CHARGING) {
+	if (properties->info.ac_online == 1) {
 		if (properties->flashing) {
 			power_applet_reset_label (applet);
 			power_applet_stop_animation (applet);
@@ -375,7 +389,7 @@ power_applet_low_power_state (GtkWidget *applet)
 		properties->flashing = TRUE;
 	}
 
-	if (properties->info.ac_online != CHARGING && 
+	if (properties->info.ac_online == 0 && 
 	    properties->show_low_dialog && 
 	    !properties->message_already_showed) {
 		properties->message_already_showed = TRUE;
@@ -654,6 +668,8 @@ power_applet_timeout_handler (GtkWidget *applet)
 	Properties *properties;
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 
+	/* g_message ("power_applet_timeout_handler"); */
+
 	if (power_management_present () == PowerManagement_NONE) {
 		return FALSE;
 	} else {	       
@@ -726,9 +742,11 @@ check_proc_file (GtkWidget *applet)
 		break;
 	case PowerManagement_APM:
 		g_message ("APM power management\n");
+		power_applet_read_device_state (applet);
 		break;
 	case PowerManagement_ACPI:
 		g_message ("ACPI power management\n");
+		power_applet_read_device_state (applet);
 		break;
 	}	
 }
@@ -1096,7 +1114,6 @@ power_applet_new (GtkWidget *applet)
 
 	/* construct pixmap widget */
 	pixmap = eel_image_new (properties->pixmaps[201]);
-	g_message ("inital img = %s", properties->pixmaps[201]);
 	gtk_object_set_data (GTK_OBJECT (applet), "pixmap", pixmap);
 	gtk_widget_show_all (pixmap);
 
@@ -1182,11 +1199,12 @@ static GtkWidget * applet_start_new_applet (const gchar *goad_id, const char **p
   
 	gtk_widget_realize (global_applet);
 	power_applet = power_applet_new (global_applet);
+	check_proc_file (global_applet);
 	gtk_widget_show (power_applet);
 
 	applet_widget_add (APPLET_WIDGET (global_applet), power_applet);
 	gtk_widget_show (global_applet);
-  
+
 	return global_applet;
 }
 
@@ -1213,7 +1231,9 @@ applet_activator (CORBA_Object poa,
 	applet_widget_add (APPLET_WIDGET (global_applet), pilot);
 	gtk_widget_show (global_applet);
 
-	/* make the applet draw a 0% strength */
+  	power_applet_timeout_handler (GTK_WIDGET (global_applet));
+
+	/* make the applet draws initial state */
 	power_applet_draw (global_applet);  
 
 	return applet_widget_corba_activate (global_applet, 

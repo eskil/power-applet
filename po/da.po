@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: wavelan-applet\n"
-"POT-Creation-Date: 2002-01-26 22:47-0800\n"
+"POT-Creation-Date: 2002-05-06 00:03-0700\n"
 "PO-Revision-Date: 2001-11-227 22:56-0900\n"
 "Last-Translator: Eskil Heyn Olsen <eskil@eskil.org>\n"
 "Language-Team: Danish <danish@klid.org>\n"
@@ -15,56 +15,56 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. N/A for Not Available
-#: src/power-applet.c:194 src/power-applet.c:231
+#: src/power-applet.c:201 src/power-applet.c:239
 msgid "N/A"
 msgstr ""
 
-#: src/power-applet.c:383
+#: src/power-applet.c:397
 #, fuzzy, c-format
 msgid "Battery charge is down to %d percent"
 msgstr "Vis signalstyrke i procent"
 
-#: src/power-applet.c:398
+#: src/power-applet.c:412
 msgid "Battery fully charged"
 msgstr ""
 
-#: src/power-applet.c:515
+#: src/power-applet.c:529
 msgid "No themes installed"
 msgstr ""
 
-#: src/power-applet.c:724
+#: src/power-applet.c:740
 msgid "No power management was found"
 msgstr ""
 
-#: src/power-applet.c:890
+#: src/power-applet.c:908
 #, fuzzy
 msgid "PowerApplet properties"
 msgstr "WaveLan applet indstillinger"
 
-#: src/power-applet.c:1049
+#: src/power-applet.c:1067
 #, fuzzy
 msgid "Power Applet"
 msgstr "WaveLan Applet"
 
-#: src/power-applet.c:1051
+#: src/power-applet.c:1069
 msgid "(C) 2001 Free Software Foundation "
 msgstr "(C) 2001 Free Software Foundation"
 
-#: src/power-applet.c:1053
+#: src/power-applet.c:1071
 msgid ""
 "Yet another applet that shows the\n"
 "waterlevel in Sortedamssøen."
 msgstr ""
 
-#: src/power-applet.c:1149
+#: src/power-applet.c:1166
 msgid "Properties..."
 msgstr "Indstillinger..."
 
-#: src/power-applet.c:1155
+#: src/power-applet.c:1172
 msgid "About..."
 msgstr "Om..."
 
-#: src/power-applet.c:1180 src/power-applet.c:1204
+#: src/power-applet.c:1197 src/power-applet.c:1222
 msgid "Can't create applet!\n"
 msgstr "Kan ikke oprette applet!\n"
 
