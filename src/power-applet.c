@@ -37,16 +37,12 @@
 #include <eel/eel-label.h>
 #include <eel/eel-gdk-pixbuf-extensions.h>
 
+#include <powerm.h>
+
 typedef enum {
 	BATTERY,
 	CHARGING
 } PowerState;
-
-typedef enum {
-	APM,
-	ACPI,
-	NONE
-} PowerManagement;
 
 #define CFG_SHOW_PERCENT "FALSE"
 #define CFG_SHOW_TIME "TRUE"
@@ -88,9 +84,9 @@ typedef struct {
 
 	/* Current state of the app */
 	gboolean flashing;
-	int minutes, percent;
-	PowerState state;
-	PowerManagement pm;
+	gboolean message_already_showed;
+	gint old_minutes;
+	PowerInfo info;
 } Properties;
 
 /* What extensions do we try to load */
@@ -177,18 +173,22 @@ power_applet_draw (GtkWidget *applet)
 	}
 
 	/* Update the tooltip */
-	{
-		char *tmp;
+	g_message ("old min = %d, new min = %d", props->old_minutes, props->info.battery_time_left);
+	g_message ("message showed = %s", props->message_already_showed ? "TRUE" : "FALSE");
+	/* let's not update the tooltip unless nessecary,
+	   since, people won't have time to see it. */
+	if (props->old_minutes != props->info.battery_time_left) {
+		char *tmp; 
 		int hr, min;
 
-		hr = props->minutes/60;
-		min = props->minutes%60;
+		hr = props->info.battery_time_left/60;
+		min = props->info.battery_time_left%60;
 
-		if (props->percent >= 0) {
-			if (props->state == CHARGING) {
-				tmp = g_strdup_printf ("%3.2d%% %2.02d:%2.02d - AC", props->percent, hr, min);
+		if (props->info.percent >= 0) {
+			if (props->info.ac_online == CHARGING) {
+				tmp = g_strdup_printf ("%3.2d%% %2.02d:%2.02d - AC", props->info.percent, hr, min);
 			} else {
-				tmp = g_strdup_printf ("%3.2d%% %2.02d:%2.02d", props->percent, hr, min);
+				tmp = g_strdup_printf ("%3.2d%% %2.02d:%2.02d", props->info.percent, hr, min);
 			}
 		} else {
 			tmp = g_strdup_printf (_("N/A"));
@@ -198,20 +198,21 @@ power_applet_draw (GtkWidget *applet)
 
 		g_free (tmp);
 	}
+	props->old_minutes = props->info.battery_time_left;
 
 	/* update the text label */ 
 	if (power_applet_do_label (applet)) {
 		GString *str = g_string_new ("");
-		if (props->percent >= 0) {
+		if (props->info.percent >= 0) {
 			if (props->show_percent) {
-				g_string_sprintfa (str, "%.2d%%", props->percent);
+				g_string_sprintfa (str, "%.2d%%", props->info.percent);
 			}
 			
 			if (props->show_time) {
 				int hr, min;
 				
-				hr = props->minutes/60;
-				min = props->minutes%60;
+				hr = props->info.battery_time_left/60;
+				min = props->info.battery_time_left%60;
 
 				if (str->len) {
 					g_string_sprintfa (str, " ");
@@ -219,7 +220,7 @@ power_applet_draw (GtkWidget *applet)
 				g_string_sprintfa (str, "%.02d:%.02d", hr, min);			
 			}
 
-			if (props->show_ac && props->state == CHARGING) {
+			if (props->show_ac && props->info.ac_online == CHARGING) {
 				if (str->len) {
 					g_string_sprintfa (str, " - ");			
 				} 
@@ -235,10 +236,10 @@ power_applet_draw (GtkWidget *applet)
 	}
 
 	/* Update the image */
-	if (props->percent >= 0 && props->percent <= 100) {
-		int pixmap_offset = props->percent;
+	if (props->info.percent >= 0 && props->info.percent <= 100) {
+		int pixmap_offset = props->info.percent;
 
-		if (props->state == CHARGING) {
+		if (props->info.ac_online == CHARGING) {
 			pixmap_offset += 100;
 		}
 		
@@ -256,7 +257,7 @@ power_applet_draw (GtkWidget *applet)
 				   props->current_pixmap);
 		}
 	} else {
-		g_warning ("Weird pct = %d", props->percent);
+		g_warning ("Weird pct = %d", props->info.percent);
 	}
 }
 
@@ -267,10 +268,10 @@ power_applet_flash_timeout (GtkWidget *applet) {
 
 	pct_label = GTK_WIDGET (gtk_object_get_data (GTK_OBJECT (applet), "percent-label"));
 	if (foo) {
-		eel_label_set_text_color (pct_label, 0xFF0000);
+		eel_label_set_text_color (EEL_LABEL (pct_label), 0xFF0000);
 		foo = FALSE;
 	} else {
-		eel_label_set_text_color (pct_label, 0x000000);
+		eel_label_set_text_color (EEL_LABEL (pct_label), 0x000000);
 		foo = TRUE;
 	}		
 	return TRUE;
@@ -335,7 +336,7 @@ power_applet_reset_label (GtkWidget *applet)
 	gtk_timeout_remove (timeout_handler_id);
 	
 	pct_label = GTK_WIDGET (gtk_object_get_data (GTK_OBJECT (applet), "percent-label"));
-	eel_label_set_text_color (pct_label, 0x000000);
+	eel_label_set_text_color (EEL_LABEL (pct_label), 0x000000);
 }
 
 static void
@@ -360,7 +361,7 @@ power_applet_low_power_state (GtkWidget *applet)
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 
 	/* if we're charging, cancel any special things */
-	if (properties->state == CHARGING) {
+	if (properties->info.ac_online == CHARGING) {
 		if (properties->flashing) {
 			power_applet_reset_label (applet);
 			power_applet_stop_animation (applet);
@@ -374,8 +375,12 @@ power_applet_low_power_state (GtkWidget *applet)
 		properties->flashing = TRUE;
 	}
 
-	if (properties->show_low_dialog) {
+	if (properties->info.ac_online != CHARGING && 
+	    properties->show_low_dialog && 
+	    !properties->message_already_showed) {
+		properties->message_already_showed = TRUE;
 		g_message ("low dialog here");
+		show_message_dialog (_("Battery charge is down to %d percent"), properties->low_threshold);
 	}
 }
 
@@ -386,32 +391,33 @@ power_applet_full_power_state (GtkWidget *applet)
 
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 
-	if (properties->show_full_dialog) {
+	if (properties->show_full_dialog && 
+	    !properties->message_already_showed) {
+		properties->message_already_showed = TRUE;
 		g_message ("full dialog here");
+		show_message_dialog (_("Battery fully charged"));
 	}
 }
 
 static void
-power_applet_update_state (GtkWidget *applet,
-			   int ac,
-			   int minutes,
-			   int percent) 
+power_applet_update_state (GtkWidget *applet) 
 {
 	Properties *properties;
 
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 
-	properties->percent = percent;
-	properties->state = ac == 1 ? CHARGING : BATTERY;
-	properties->minutes = minutes;
-	
-	if (properties->percent < properties->low_threshold) {
+	if (properties->info.percent <= properties->low_threshold) {
 		power_applet_low_power_state (applet);
-	}
-	if (properties->percent == 100) {
+	} else if (properties->info.percent == 100) {
 		power_applet_full_power_state (applet);
+	} else {
+		if (properties->flashing) {
+			power_applet_reset_label (applet);
+			power_applet_stop_animation (applet);
+		}
+		properties->flashing = FALSE;
+		properties->message_already_showed = FALSE;	
 	}	
-
 	power_applet_draw (applet);
 }
 
@@ -614,87 +620,20 @@ static void
 power_applet_set_low_power_threshold (GtkWidget *applet, int low_threshold) {
 	Properties *props = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 	props->low_threshold = low_threshold;
+
+	g_message ("power_applet_set_low_power_threshold flashing = %s, percent = %d/%d",
+		   props->flashing ? "TRUE" : "FALSE", props->info.percent, low_threshold);
+	
+	if (props->flashing && props->info.percent > low_threshold) {
+		power_applet_reset_label (applet);
+		power_applet_stop_animation (applet);
+	}
 }
 
 static void
 power_applet_set_show_full_power_dialog (GtkWidget *applet, gboolean show) {
 	Properties *props = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 	props->show_full_dialog = show;
-}
-
-static void
-power_applet_read_apm (GtkWidget *applet) {
-	Properties *properties;
-	FILE *proc;
-	
-	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
-	
-	proc = fopen ("/proc/apm", "rt");
-	if (proc)  {
-		int ac, pct, min;
-		int filler3, filler4, filler5;
-		char line[256];
-		char *zeroxpos;
-		
-		fgets (line, 256, proc);
-		zeroxpos = strstr (line, "0x");
-		if (zeroxpos) {
-			sscanf (zeroxpos, "0x%d 0x%d 0x%d 0x%d %d%% %d min",
-				&filler3, 
-				&ac,
-				&filler4, &filler5,
-				&pct, &min);
-			g_message ("From %s", line);
-			g_message ("Read foo foo 0x%d 0x%d 0x%d 0x%d %d%% %d min",
-				   filler3,
-				   ac,
-				   filler4, filler5,
-				   pct, min);
-			g_message ("AC is %s - charge is %d %%, %d mins left", ac ? "ON" : "OFF", pct, min);
-			
-			power_applet_update_state (applet, ac, min, pct);
-		} else {
-			g_message ("Weird APM line");
-		}
-		
-	} else {
-		show_warning_dialog (_("Cannot open /proc/apm"));
-		properties->pm = NONE;
-	}
-	fclose (proc);
-}
-
-static void
-power_applet_read_acpi (GtkWidget *applet) {
-	Properties *properties;
-	FILE *proc;
-	
-	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
-	
-	proc = fopen ("/proc/sys/acpi/knep_en_nisse", "rt");
-	if (proc)  {
-		int ac, pct, min;
-		float filler1, filler2;
-		int filler3, filler4, filler5;
-		char line[256];
-		
-		fgets (line, 256, proc);
-		sscanf (line, "%f %f 0x%d 0x%d 0x%d 0x%d %d%% %d min",
-			&filler1, &filler2, &filler3, 
-			&ac,
-			&filler4, &filler5,
-			&pct, &min);
-		
-		g_message ("From %s", line);
-		g_message ("AC is %s - charge is %d %%, %d mins left", ac ? "ON" : "OFF", pct, min);
-		
-		power_applet_update_state (applet, ac, min, pct);
-		
-	} else {
-		show_warning_dialog (_("Cannot open /proc/apm"));
-		properties->pm = NONE;
-	}
-	fclose (proc);
 }
 
 /* check stats, modify the state attribute and return TRUE 
@@ -705,18 +644,8 @@ power_applet_read_device_state (GtkWidget *applet)
 	Properties *properties;
 
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
-
-	/* Here we begin to suck... */
-	switch (properties->pm) {
-	case APM: 
-		power_applet_read_apm (applet);
-		break;
-	case ACPI:
-		power_applet_read_acpi (applet);
-		break;
-	default:
-		break;
-	}
+	power_management_read_info (&properties->info);
+	power_applet_update_state (applet);
 }
 
 static int
@@ -725,7 +654,7 @@ power_applet_timeout_handler (GtkWidget *applet)
 	Properties *properties;
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 
-	if (properties->pm == NONE) {
+	if (power_management_present () == PowerManagement_NONE) {
 		return FALSE;
 	} else {	       
 		power_applet_read_device_state (applet);
@@ -789,16 +718,19 @@ check_proc_file (GtkWidget *applet)
 	Properties *properties;
 	properties = gtk_object_get_data (GTK_OBJECT (applet), "properties");
 
-	if (g_file_test ("/proc/apm", G_FILE_TEST_ISFILE)) {
-		g_message ("APM detected");
-		properties->pm = APM;
-	} else if (g_file_test ("/proc/sys/acpi", G_FILE_TEST_ISDIR)) {
-		g_message ("ACPI detected");
-		properties->pm = ACPI;
-	} else {
-		g_message ("No power management found");
+	switch (power_management_present ()) {
+	case PowerManagement_NONE:
+		g_message ("No power management\n");
 		show_error_dialog (_("No power management was found"));
-	}
+		exit (1);
+		break;
+	case PowerManagement_APM:
+		g_message ("APM power management\n");
+		break;
+	case PowerManagement_ACPI:
+		g_message ("ACPI power management\n");
+		break;
+	}	
 }
 
 static void
@@ -821,11 +753,11 @@ power_applet_load_properties (GtkWidget *applet)
 	properties->text_aa = gnome_config_get_bool ("power/text_aa=" CFG_TEXT_AA);
 	properties->flash_red_when_low = gnome_config_get_bool ("power/flash_red_when_low=" CFG_FLASH_TEXT_RED);
 	properties->theme = gnome_config_get_string ("power/theme=" CFG_THEME);
+	
+	properties->message_already_showed = TRUE;
 
 	properties->text_smaller = gnome_config_get_int ("power/text_smaller=5");
 	gnome_config_pop_prefix ();
-
-	properties->pm = NONE;
 }
 
 static void
@@ -1118,7 +1050,8 @@ power_applet_about_cb (AppletWidget *widget, gpointer data)
 				version,
 				_("(C) 2001 Free Software Foundation "),
 				(const gchar**)authors,
-				_("blablabla"),
+				_("Yet another applet that shows the\n"
+				  "waterlevel in Sortedamssøen."),
 				NULL);
 	gtk_widget_show (about);
 
@@ -1226,6 +1159,7 @@ power_applet_new (GtkWidget *applet)
 	timeout_handler_id = gtk_timeout_add (properties->update_interval * 1000, 
 					      (GtkFunction)power_applet_timeout_handler, 
 					      applet);
+
 	gtk_object_set_data (GTK_OBJECT (applet), 
 			     "timeout_handler_id", 
 			     GINT_TO_POINTER (timeout_handler_id));

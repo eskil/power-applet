@@ -7,12 +7,36 @@ INCLUDES = 							\
 	$(GNOME_INCLUDEDIR)					\
 	$(LIBGLADE_CFLAGS)					\
 	$(EEL_CFLAGS)						\
+	$(GNOME_VFS_CFLAGS)					\
+	$(GDK_PIXBUF_CFLAGS)					\
 	$(ORBIT_CFLAGS)						\
 	-DGNOMELOCALEDIR=\""$(datadir)/locale"\"		\
 	-DGNOME_ICONDIR=\""$(datadir)/pixmaps"\"		\
 	$(NULL)
 
 bin_PROGRAMS = power-applet
+lib_LTLIBRARIES = libpowerm.la
+noinst_PROGRAMS = test-libpowerm
+
+libpowerm_la_LDFLAGS =		\
+	$(NULL)
+
+libpowerm_la_SOURCES =		\
+	powerm.c		\
+	powerm.h		\
+	$(NULL)
+
+libpowerm_la_LDFLAGS =		\
+	-version-info 0:0:0	\
+	$(NULL)
+
+test_libpowerm_SOURCES =	\
+	test-libpowerm.c	\
+	$(NULL)
+
+test_libpowerm_LDADD = 		\
+	libpowerm.la		\
+	$(NULL)
 
 power_applet_SOURCES = 	\
 	power-applet.c	\
@@ -25,7 +49,10 @@ power_applet_LDADD = 		\
 	$(INTLLIBS)		\
 	$(LIBGLADE_LIBS)	\
 	$(EEL_LIBS)		\
+	$(GNOME_VFS_CFLAGS)	\
+	$(GDK_PIXBUF_CFLAGS)	\
 	$(ORBIT_LIBS)		\
+	libpowerm.la		\
 	$(NULL)
 
 sysdir = $(datadir)/applets/Monitors

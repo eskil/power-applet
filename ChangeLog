@@ -1,3 +1,27 @@
+2002-01-25  Eskil Heyn Olsen  <eskil@eskil.dk>
+
+	* configure.in:
+	* src/Makefile.am:
+	* src/power-applet.c: (power_applet_draw),
+	(power_applet_flash_timeout), (power_applet_reset_label),
+	(power_applet_low_power_state), (power_applet_full_power_state),
+	(power_applet_update_state),
+	(power_applet_set_low_power_threshold),
+	(power_applet_set_show_full_power_dialog),
+	(power_applet_read_device_state), (power_applet_timeout_handler),
+	(check_proc_file), (power_applet_load_properties),
+	(power_applet_save_properties), (power_applet_about_cb),
+	(power_applet_save_session), (power_applet_new):
+	* src/powerm.c: (power_management_read_acpi),
+	(power_management_read_apm), (power_management_present),
+	(power_management_start_reading), (power_management_stop_reading),
+	(power_management_read_info), (power_management_suspend),
+	(power_management_standby):
+	* src/powerm.h:
+	* src/test-libpowerm.c: (main):
+	Moved the PM stuff into a library, and whacked the applet into
+	shape to use it. For my next stunt, I shall add ACPI support.
+
 2001-12-13  Eskil Heyn Olsen  <eskil@eskil.dk>
 
 	* src/power-applet.c: (power_applet_update_state),

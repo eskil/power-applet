@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(power-applet, 0.3)
+AM_INIT_AUTOMAKE(power-applet, 0.4)
 AM_CONFIG_HEADER(config.h)
 
 dnl Pick up the Gnome macros.
@@ -9,6 +9,7 @@ AM_ACLOCAL_INCLUDE(macros)
 AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
+AM_PROG_LIBTOOL
 AC_HEADER_STDC
 
 GNOME_COMPILE_WARNINGS
@@ -24,6 +25,16 @@ EEL_CFLAGS="`$GNOME_CONFIG --cflags eel`"
 EEL_LIBS="`$GNOME_CONFIG --libs eel`"
 AC_SUBST(EEL_CFLAGS)
 AC_SUBST(EEL_LIBS)
+
+GDK_PIXBUF_CFLAGS="`$GNOME_CONFIG --cflags gdk_pixbuf`"
+GDK_PIXBUF_LIBS="`$GNOME_CONFIG --libs gdk_pixbuf`"
+AC_SUBST(GDK_PIXBUF_CFLAGS)
+AC_SUBST(GDK_PIXBUF_LIBS)
+
+GNOME_VFS_CFLAGS="`$GNOME_CONFIG --cflags vfs`"
+GNOME_VFS_LIBS="`$GNOME_CONFIG --libs vfs`"
+AC_SUBST(GNOME_VFS_CFLAGS)
+AC_SUBST(GNOME_VFS_LIBS)
 
 dnl Set PACKAGE_LOCALE_DIR in config.h.
 if test "x${prefix}" = "xNONE"; then
