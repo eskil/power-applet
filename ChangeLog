@@ -1,0 +1,106 @@
+2001-12-13  Eskil Heyn Olsen  <eskil@eskil.dk>
+
+	* src/power-applet.c: (power_applet_update_state),
+	(power_applet_load_theme_image):
+
+	none of yer business
+
+2001-12-11  Eskil Heyn Olsen  <eskil@eskil.dk>
+
+	* AUTHORS:
+	* Makefile.am:
+	* configure.in:
+	* po/POTFILES.in:
+	* po/cat-id-tbl.c:
+	* po/da.gmo:
+	* po/da.po:
+	* src/Makefile.am:
+	* src/power-applet-strings.c:
+	* src/power-applet.c: (power_applet_panel_do_draw_signal),
+	(power_applet_do_label), (power_applet_draw),
+	(power_applet_flash_timeout), (power_applet_animate_timeout),
+	(power_applet_start_animation),
+	(power_applet_start_label_flashing), (power_applet_reset_label),
+	(power_applet_stop_animation), (power_applet_low_power_state),
+	(power_applet_full_power_state), (power_applet_update_state),
+	(power_applet_load_theme_image), (power_applet_load_theme),
+	(power_applet_set_theme), (power_applet_set_update_interval),
+	(power_applet_set_flash_red), (power_applet_set_text_aa),
+	(power_applet_set_label), (power_applet_set_show_low_power_dialog),
+	(power_applet_set_low_power_threshold),
+	(power_applet_set_show_full_power_dialog), (power_applet_read_apm),
+	(power_applet_read_acpi), (power_applet_read_device_state),
+	(power_applet_timeout_handler), (check_proc_file),
+	(power_applet_load_properties), (power_applet_save_properties),
+	(power_applet_apply_properties_cb), (power_applet_add_theme_menu),
+	(power_applet_properties_dialog), (power_applet_new),
+	(applet_activator), (main):
+	* src/power-applet.glade:
+	* themes/Makefile.am:
+	* themes/default/Makefile.am:
+	* themes/gauge/Makefile.am:
+	* themes/gauge/battery-0-0.png:
+	* themes/gauge/battery-1-20.png:
+	* themes/gauge/battery-21-40.png:
+	* themes/gauge/battery-41-60.png:
+	* themes/gauge/battery-61-80.png:
+	* themes/gauge/battery-81-100.png:
+	* themes/gauge/charging-0-0.png:
+	* themes/gauge/charging-1-20.png:
+	* themes/gauge/charging-21-40.png:
+	* themes/gauge/charging-41-60.png:
+	* themes/gauge/charging-61-80.png:
+	* themes/gauge/charging-81-100.png:
+	* themes/lcd-translucent/Makefile.am:
+	* themes/lcd-translucent/battery-0-0.png:
+	* themes/lcd-translucent/battery-1-10.png:
+	* themes/lcd-translucent/battery-11-20.png:
+	* themes/lcd-translucent/battery-21-30.png:
+	* themes/lcd-translucent/battery-31-40.png:
+	* themes/lcd-translucent/battery-41-50.png:
+	* themes/lcd-translucent/battery-51-60.png:
+	* themes/lcd-translucent/battery-61-70.png:
+	* themes/lcd-translucent/battery-71-80.png:
+	* themes/lcd-translucent/battery-81-90.png:
+	* themes/lcd-translucent/battery-91-100.png:
+	* themes/lcd-translucent/charging-0-0.png:
+	* themes/lcd-translucent/charging-1-10.png:
+	* themes/lcd-translucent/charging-11-20.png:
+	* themes/lcd-translucent/charging-21-30.png:
+	* themes/lcd-translucent/charging-31-40.png:
+	* themes/lcd-translucent/charging-41-50.png:
+	* themes/lcd-translucent/charging-51-60.png:
+	* themes/lcd-translucent/charging-61-70.png:
+	* themes/lcd-translucent/charging-71-80.png:
+	* themes/lcd-translucent/charging-81-90.png:
+	* themes/lcd-translucent/charging-91-100.png:
+	* themes/lcd/Makefile.am:
+	* themes/lcd/battery-0-0.png:
+	* themes/lcd/battery-1-10.png:
+	* themes/lcd/battery-11-20.png:
+	* themes/lcd/battery-21-30.png:
+	* themes/lcd/battery-31-40.png:
+	* themes/lcd/battery-41-50.png:
+	* themes/lcd/battery-51-60.png:
+	* themes/lcd/battery-61-70.png:
+	* themes/lcd/battery-71-80.png:
+	* themes/lcd/battery-81-90.png:
+	* themes/lcd/battery-91-100.png:
+	* themes/lcd/charging-0-0.png:
+	* themes/lcd/charging-1-10.png:
+	* themes/lcd/charging-11-20.png:
+	* themes/lcd/charging-21-30.png:
+	* themes/lcd/charging-31-40.png:
+	* themes/lcd/charging-41-50.png:
+	* themes/lcd/charging-51-60.png:
+	* themes/lcd/charging-61-70.png:
+	* themes/lcd/charging-71-80.png:
+	* themes/lcd/charging-81-90.png:
+	* themes/lcd/charging-91-100.png:
+	* themes/lcd/low01.png:
+	* themes/lcd/low02.png:
+	* themes/leds/Makefile.am:
+
+	Added tigert's themes.
+	Made v.0.2 with bells'n'whistles and shit.
+

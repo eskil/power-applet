@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Power
+Comment=Monitors battery charge
+Exec=power-applet --activate-goad-server=power-applet
+Icon=power-applet.png
+Terminal=0
+Type=Application

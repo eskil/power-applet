@@ -1,0 +1,4 @@
+# List of source files containing translatable strings.
+
+src/power-applet.c
+src/power-applet-strings.c
